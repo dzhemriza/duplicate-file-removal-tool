@@ -1,0 +1,93 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.dfrt</groupId>
+    <artifactId>dfrt</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0</version>
+    <name>duplicate-file-removal-tool</name>
+    <description>Duplicate File Removal Tool.</description>
+
+    <properties>
+        <jdk.version>1.8</jdk.version>
+        <maven.plugin.compiler.version>3.5.1</maven.plugin.compiler.version>
+
+        <maven.plugin.exec.version>1.4.0</maven.plugin.exec.version>
+        <assembly.maven.plugin>2.6</assembly.maven.plugin>
+        <log4j.version>1.2.17</log4j.version>
+        <jackson.mapper.version>1.9.13</jackson.mapper.version>
+        <junit.version>4.12</junit.version>
+        <commons.codec.version>1.10</commons.codec.version>
+        <spring.version>4.2.5.RELEASE</spring.version>
+        <spring.shell.version>1.2.0.RELEASE</spring.shell.version>
+        <bouncy.castle.version>1.55</bouncy.castle.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>apache-log4j-extras</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>${jackson.mapper.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.plugin.compiler.version}</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.plugin.exec.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.dfrt.App</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
