@@ -46,27 +46,12 @@ public class FileChecksumCalculatorServiceImpl implements FileChecksumCalculator
         Map<String, List<Path>> result = new HashMap<>();
 
         try {
+            ArrayList<Path> allFiles = getAllFiles(path);
 
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    LOG.debug("Start processing file: " + file);
-                    try (FileInputStream fileInputStream = new FileInputStream(file.toFile())) {
-                        String sha512sum = Hex.encodeHexString(DigestUtils.sha1(fileInputStream));
+            allFiles.sort((o1, o2) -> o1.compareTo(o2));
 
-                        if (result.containsKey(sha512sum)) {
-                            // We found a duplicate
-                            List<Path> files = result.get(sha512sum);
-                            files.add(file);
-                        } else {
-                            ArrayList<Path> files = new ArrayList<>();
-                            files.add(file);
-                            result.put(sha512sum, files);
-                        }
-                    }
-
-                    return super.visitFile(file, attrs);
-                }
+            allFiles.stream().forEach((file) -> {
+                processFile(file, result);
             });
 
         } catch (IOException ioException) {
@@ -76,6 +61,41 @@ public class FileChecksumCalculatorServiceImpl implements FileChecksumCalculator
         }
 
         return result;
+    }
+
+    private void processFile(Path file, Map<String, List<Path>> result) {
+        try {
+            try (FileInputStream fileInputStream = new FileInputStream(file.toFile())) {
+                String sha512sum = Hex.encodeHexString(DigestUtils.sha1(fileInputStream));
+
+                if (result.containsKey(sha512sum)) {
+                    // We found a duplicate
+                    List<Path> files = result.get(sha512sum);
+                    files.add(file);
+                } else {
+                    ArrayList<Path> files = new ArrayList<>();
+                    files.add(file);
+                    result.put(sha512sum, files);
+                }
+            }
+        } catch (IOException ioException) {
+            final String m = "Error while walking through the directory tree: " + ioException.getMessage();
+            LOG.error(m, ioException);
+            throw new DomainException(m, ioException);
+        }
+    }
+
+    private ArrayList<Path> getAllFiles(Path path) throws IOException {
+        ArrayList<Path> allFiles = new ArrayList<>();
+
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                allFiles.add(file);
+                return super.visitFile(file, attrs);
+            }
+        });
+        return allFiles;
     }
 
 }

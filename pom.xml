@@ -4,11 +4,11 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dfrt</groupId>
-    <artifactId>dfrt</artifactId>
+    <artifactId>duplicate-file-removal-tool</artifactId>
     <packaging>jar</packaging>
     <version>1.0</version>
     <name>duplicate-file-removal-tool</name>
-    <description>Duplicate File Removal Tool.</description>
+    <description>Duplicate File Removal Tool</description>
 
     <properties>
         <jdk.version>1.8</jdk.version>
@@ -20,9 +20,11 @@
         <jackson.mapper.version>1.9.13</jackson.mapper.version>
         <junit.version>4.12</junit.version>
         <commons.codec.version>1.10</commons.codec.version>
+        <commons.io.version>2.5</commons.io.version>
         <spring.version>4.2.5.RELEASE</spring.version>
         <spring.shell.version>1.2.0.RELEASE</spring.shell.version>
         <bouncy.castle.version>1.55</bouncy.castle.version>
+        <assembly.maven.plugin>2.6</assembly.maven.plugin>
     </properties>
 
     <dependencies>
@@ -57,7 +59,11 @@
             <artifactId>commons-codec</artifactId>
             <version>${commons.codec.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -86,6 +92,29 @@
                 <configuration>
                     <mainClass>org.dfrt.App</mainClass>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${assembly.maven.plugin}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.dfrt.App</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -19,6 +19,7 @@
  */
 package org.dfrt.domain.model.services;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,6 @@ public interface DuplicateFileCleanupService {
      * @param backup
      *            Backup files directory
      */
-    void cleanup(Path source, Map<String, List<Path>> files, Path backup);
+    void cleanup(Path source, Map<String, List<Path>> files, Path backup) throws IOException;
 
 }

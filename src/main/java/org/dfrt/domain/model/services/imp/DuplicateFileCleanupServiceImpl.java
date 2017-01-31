@@ -20,13 +20,15 @@
 package org.dfrt.domain.model.services.imp;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.io.InterruptedIOException;
+import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileSystemUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dfrt.domain.model.exceptions.DomainException;
 import org.dfrt.domain.model.services.DuplicateFileCleanupService;
@@ -37,42 +39,47 @@ public class DuplicateFileCleanupServiceImpl implements DuplicateFileCleanupServ
 
     @Override
     public void cleanup(Path source, Map<String, List<Path>> files, Path backup) {
-        files.entrySet().forEach((entry) -> {
-            try {
+        // Step 1: Create the directory structure before the actual file move operation
+        files.entrySet().stream().forEach((entry) -> {
+            List<Path> duplicates = entry.getValue();
 
-                List<Path> duplicates = entry.getValue();
-                if (duplicates.size() > 1) {
-                    // We have more than 1 file with the same checksum
+            duplicates.stream().forEach((fileToMove) -> {
+                Path relativePath = source.relativize(fileToMove);
+                Path destFileLocation = Paths.get(backup.toString(), relativePath.toString());
 
-                    // Iterate through all the duplicate files skipping the
-                    // first element
-                    for (int i = 1; i < duplicates.size(); ++i) {
-                        Path fileToMove = duplicates.get(i);
+                Path parentDir = destFileLocation.getParent();
+                if (!parentDir.toFile().exists() && !parentDir.toFile().mkdirs()) {
+                    String m = "Unable to create directory: " + parentDir;
+                    LOG.error(m);
+                    throw new DomainException(m);
+                }
+            });
+        });
 
-                        Path relativePath = source.relativize(fileToMove);
-                        Path destFileLocation = Paths.get(backup.toString(), relativePath.toString());
+        // Step 2: Move files
+        files.entrySet().stream()
+                .filter((entry) -> entry.getValue().size() > 1)
+                .forEach((entry) -> {
+                    try {
+                        List<Path> duplicates = entry.getValue();
+                        // We have more than 1 file with the same checksum
 
-                        Path parentDir = destFileLocation.getParent();
-                        if (!parentDir.toFile().exists() && !parentDir.toFile().mkdirs()) {
-                            String m = "Unable to create directory: " + parentDir;
-                            LOG.error(m);
-                            throw new DomainException(m);
+                        // Iterate through all the duplicate files skipping the
+                        // first element
+                        for (int i = 1; i < duplicates.size(); ++i) {
+                            Path fileToMove = duplicates.get(i);
+
+                            Path relativePath = source.relativize(fileToMove);
+                            Path destFileLocation = Paths.get(backup.toString(), relativePath.toString());
+
+                            FileUtils.moveFile(fileToMove.toFile(), destFileLocation.toFile());
                         }
 
-                        LOG.debug("Moving file: " + fileToMove + " to: " + destFileLocation);
-                        Files.copy(fileToMove, destFileLocation, StandardCopyOption.COPY_ATTRIBUTES,
-                                StandardCopyOption.REPLACE_EXISTING);
-
-                        LOG.debug("Deleting file: " + fileToMove);
-                        Files.delete(fileToMove);
+                    } catch (IOException ioException) {
+                        String m = "Unable to move file: " + ioException.getMessage();
+                        LOG.error(m, ioException);
+                        throw new DomainException(m, ioException);
                     }
-                }
-
-            } catch (IOException ioException) {
-                String m = "Unable to move file: " + ioException.getMessage();
-                LOG.error(m, ioException);
-                throw new DomainException(m, ioException);
-            }
-        });
+                });
     }
 }

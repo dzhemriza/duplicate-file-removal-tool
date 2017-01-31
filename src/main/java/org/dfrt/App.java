@@ -19,17 +19,20 @@
  */
 package org.dfrt;
 
+import org.apache.log4j.Logger;
+import org.dfrt.domain.model.services.CleanupPostValidationService;
+import org.dfrt.domain.model.services.DuplicateFileCleanupService;
+import org.dfrt.domain.model.services.FileChecksumCalculatorService;
+import org.dfrt.domain.model.services.imp.CleanupPostValidationServiceImpl;
+import org.dfrt.domain.model.services.imp.DuplicateFileCleanupServiceImpl;
+import org.dfrt.domain.model.services.imp.FileChecksumCalculatorServiceImpl;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.dfrt.domain.model.services.DuplicateFileCleanupService;
-import org.dfrt.domain.model.services.FileChecksumCalculatorService;
-import org.dfrt.domain.model.services.imp.DuplicateFileCleanupServiceImpl;
-import org.dfrt.domain.model.services.imp.FileChecksumCalculatorServiceImpl;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Main program entry point
@@ -55,22 +58,31 @@ public class App {
         }
 
         try {
+            long time = System.currentTimeMillis();
+
             final Path source = Paths.get(args[0]);
             final Path target = Paths.get(args[1]);
 
+            LOG.info("File indexing...");
             FileChecksumCalculatorService fileChecksumCalculatorService = new FileChecksumCalculatorServiceImpl();
-
             Map<String, List<Path>> allFiles = fileChecksumCalculatorService.traverse(source);
-
-            // Print out all files
-            LOG.debug("Result Dump:");
-            allFiles.entrySet().stream().forEach((entry) -> {
-                LOG.debug("Checksum: [" + entry.getKey() + "], Path: [" + entry.getValue() + "]");
-            });
+            LOG.info("File indexing...done.");
 
             DuplicateFileCleanupService duplicateFileCleanupService = new DuplicateFileCleanupServiceImpl();
 
+            LOG.info("Cleanup started...");
             duplicateFileCleanupService.cleanup(source, allFiles, target);
+            LOG.info("Cleanup started...done.");
+
+            LOG.info("Post Validation...");
+            CleanupPostValidationService cleanupPostValidationService =
+                    new CleanupPostValidationServiceImpl(fileChecksumCalculatorService);
+
+            cleanupPostValidationService.validate(source, target);
+            LOG.info("Post Validation...done.");
+
+            LOG.info("Operation took: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time)
+                    + " seconds.");
         } catch (Exception exception) {
             LOG.error("Unknown error: " + exception.getMessage(), exception);
         }
