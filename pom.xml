@@ -6,7 +6,7 @@
     <groupId>org.dfrt</groupId>
     <artifactId>duplicate-file-removal-tool</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>duplicate-file-removal-tool</name>
     <description>Duplicate File Removal Tool</description>
 
