@@ -1,5 +1,5 @@
 /*
- * org.toffi
+ * org.dfrt
  *
  * File Name: DomainException.java
  *

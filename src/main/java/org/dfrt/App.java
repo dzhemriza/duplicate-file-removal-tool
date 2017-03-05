@@ -23,9 +23,9 @@ import org.apache.log4j.Logger;
 import org.dfrt.domain.model.services.CleanupPostValidationService;
 import org.dfrt.domain.model.services.DuplicateFileCleanupService;
 import org.dfrt.domain.model.services.FileChecksumCalculatorService;
-import org.dfrt.domain.model.services.imp.CleanupPostValidationServiceImpl;
-import org.dfrt.domain.model.services.imp.DuplicateFileCleanupServiceImpl;
-import org.dfrt.domain.model.services.imp.FileChecksumCalculatorServiceImpl;
+import org.dfrt.domain.model.services.impl.CleanupPostValidationServiceImpl;
+import org.dfrt.domain.model.services.impl.DuplicateFileCleanupServiceImpl;
+import org.dfrt.domain.model.services.impl.FileChecksumCalculatorServiceImpl;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
